@@ -101,7 +101,7 @@ public class TestCommandHandler : ICommandHandler<TestCommand>
         // Perform your command logic here
         // Can return data if need to but not recommended.
         var data = 1;
-        return CQRSResponse.Success;
+        return CQRSResponse.Success();
     }
 }
 
@@ -177,7 +177,7 @@ public class IsAdminRequirementHandler : IAuthorisationRequirementHandler<IsAdmi
     public async Task<CQRSResponse> Handle(IsAdminRequirement requirement, CancellationToken cancellationToken)
     {
         // Perform your authorisation logic here
-        return CQRSResponse.Success;
+        return CQRSResponse.Success();
     }
 }
 ```
