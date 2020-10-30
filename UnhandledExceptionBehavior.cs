@@ -14,13 +14,10 @@ namespace CQRS.Behaviours
         where TResponse : CQRSResponse, new()
     {
         private readonly ILogger<UnhandledExceptionBehavior<TRequest, TResponse>> logger;
-        private readonly INotificationService notificationService;
 
-        public UnhandledExceptionBehavior(ILogger<UnhandledExceptionBehavior<TRequest, TResponse>> logger,
-                                          INotificationService notificationService)
+        public UnhandledExceptionBehavior(ILogger<UnhandledExceptionBehavior<TRequest, TResponse>> logger)
         {
             this.logger = logger;
-            this.notificationService = notificationService;
         }
 
         public async Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken, RequestHandlerDelegate<TResponse> next)
@@ -32,25 +29,11 @@ namespace CQRS.Behaviours
             catch (Exception ex)
             {
                 logger.LogError(ex, "{Request} - Unhandled exception caught.", typeof(TRequest).Name);
-                await SendUnexpectedErrorMessage(ex, request);
                 var response = new TResponse();
+                // TODO: Send notification if required
                 response.ServerError();
                 return response;
             }
-        }
-
-        private async Task SendUnexpectedErrorMessage(Exception ex, TRequest request)
-        {
-            var builder = new StringBuilder();
-            builder.AppendLine("An unexpected error occured.");
-            builder.AppendLine($"Request Type: {request.GetType().Name}");
-            builder.AppendLine($"Request Body: {request.ToJson()}");
-            await notificationService.Send
-            (
-                subject: "Unhandled Exception Occurred",
-                body: builder.ToString(),
-                ex: ex
-            );
         }
     }
 }

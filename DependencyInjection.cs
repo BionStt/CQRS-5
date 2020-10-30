@@ -11,6 +11,23 @@ namespace CQRS.DependencyInjection
 {
     public static class DependencyInjection
     { 
+
+        public static void AddCQRS(this IServiceCollection services, Assembly assembly)
+        {
+            // Add MediatR - This adds all of the following:
+            // Command Handlers
+            // Query Handlers
+            // Authorisation Handlers
+            services.AddMediatR(assembly);
+
+            // Add the MediatR behaviour pipeline. Will execute in order of registration.
+            // See: https://github.com/jbogard/MediatR/wiki/Behaviors
+            services.AddDefaultBehaviours();
+
+            // Add the request validators
+            services.AddValidators(assembly);
+        }
+
         public static void AddDefaultBehaviours(this IServiceCollection services)
         {
             // Add the MediatR behaviour pipeline. Will execute in order of registration.
