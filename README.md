@@ -1,6 +1,11 @@
 # CQRS
-CQRS library which includes behaviors, validators and authorization boilerplates.
-This library is based on MediatR.
+CQRS library based on [MediatR](https://github.com/jbogard/MediatR) which includes behaviors, validators and authorization boilerplates.
+
+This library will give you the following functionality out of the box:
+- Unhandled exception logging.
+- Request performance logging.
+- Request validation behaviour.
+- Request authorisation behaviour.
 
 ## Dependency Injection
 You just need to add the following lines of code to your `Startup.cs` class to use this library.
@@ -68,7 +73,7 @@ public class TestCommandHandler : ICommandHandler<TestCommand>
 ```
 
 
-## Query and Command Validation
+### Query and Command Validation
 ``` csharp
 public class TestQueryValidator : IValidator<TestQuery>
 {
@@ -85,6 +90,49 @@ public class TestQueryValidator : IValidator<TestQuery>
         // return CQRSResponse.Success() if successful
         // return CQRSResponse.Bad() or Unauthorised etc if unsuccessful
         return CQRSResponse.Success();
+    }
+}
+```
+
+### Query and Command Authorisation
+#### IAuthorisationRequirement Interface
+The interface which needs to be implemented to define an authorisation requirement. A requirement is something which must be meet for the command or query to be authorised.
+``` csharp
+public class IsAdminRequirement : IAuthorisationRequirement 
+{
+    // Properties can be added in here.
+    // When you add properties here you can use the data inside the authorisation handler logic.
+}
+```
+
+#### IAuthorisable Interface
+The interface the `Command` or `Query` needs to implement. Will define the list of requirements which need to be meet in order for the query or command to execute.
+``` csharp
+public class GetAllUsersQuery : IQuery, IAuthorisable 
+{
+    // Create a list of requirements the query must meet
+    // If the require add the query data to the authorisation requirement.
+    public IEnumerable<IAuthorisationRequirement> Requirements => new List<IAuthorisationRequirement> { new IsAdminRequirement() }
+}
+```
+
+
+#### IAuthorisationRequirementHandler Interface
+The interface which needs to be implemented to define the authorisation logic for a requirement.
+``` csharp
+public class IsAdminRequirementHandler : IAuthorisationRequirementHandler<IsAdminRequirement>
+{
+    // Will be injected using dependency injection
+    private readonly IDependency dependency;
+    public IsAdminRequirementHandler(IDependency dependency)
+    {
+        this.dependency = dependency;
+    }
+
+    public async Task<CQRSResponse> Handle(IsAdminRequirement requirement, CancellationToken cancellationToken)
+    {
+        // Perform your authorisation logic here
+        return CQRSResponse.Success;
     }
 }
 ```
