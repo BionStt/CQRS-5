@@ -2,6 +2,16 @@
 CQRS library which includes behaviors, validators and authorization boilerplates.
 This library is based on MediatR.
 
+## Dependency Injection
+You just need to add the following lines of code to your `Startup.cs` class to use this library.
+``` csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    // Add the assembly where all your Query and Command handlers are located.
+    services.AddCQRS(typeof(Startup).Assembly);
+}
+```
+
 ## Examples
 ### Query & Query Handlers
 ``` csharp
